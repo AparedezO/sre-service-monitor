@@ -1,38 +1,45 @@
-# Service Monitor SRE
+# ?? Service Monitor SRE
 
-A Python-based SRE monitoring project that performs periodic health checks against a target URL, writes structured logs, tracks consecutive failures, triggers critical alerts, and exposes Prometheus metrics for observability.
+> Lightweight SRE-style service monitoring in Python with health checks, alerting, Prometheus metrics, and Docker support.
 
-## Overview
+## ?? Overview
 
-This project simulates a lightweight production-style monitoring workflow:
+This project simulates a practical monitoring workflow used in real SRE environments.
+It periodically checks a target service, classifies its health, records logs, detects repeated failures, raises alerts, and exposes Prometheus-compatible metrics.
 
-- Sends periodic HTTP requests to a monitored service
-- Classifies service health as `HEALTHY`, `DEGRADED`, or `DOWN`
-- Writes ISO 8601 timestamped logs
-- Detects repeated failures and raises critical alerts
-- Exposes Prometheus-compatible metrics on `/metrics`
-- Loads runtime configuration from environment variables
-- Can run locally or inside Docker
+## ? Key Features
 
-## Features
+- HTTP health checks against a configurable target URL
+- Health classification: `HEALTHY`, `DEGRADED`, `DOWN`
+- Structured logs with ISO 8601 timestamps
+- Consecutive failure tracking and critical alerting
+- Prometheus metrics exposed at `/metrics`
+- Environment-based configuration with `.env`
+- Docker-ready runtime
 
-- Continuous URL monitoring
-- Structured timestamped logging
-- Consecutive failure tracking
-- Critical alert thresholds
-- Environment-based configuration
-- Prometheus metrics endpoint
-- Docker-ready deployment
+## ??? Architecture
 
-## Tech Stack
+```text
+Monitor Loop
+    |
+    +-- Send HTTP request
+    +-- Evaluate response code
+    +-- Classify service state
+    +-- Update counters and gauge
+    +-- Write structured log
+    +-- Trigger alert if threshold is reached
+    +-- Sleep for INTERVAL seconds
+```
 
-- Python
+## ??? Tech Stack
+
+- `Python`
 - `requests`
 - `python-dotenv`
 - `prometheus_client`
-- Docker
+- `Docker`
 
-## Project Structure
+## ?? Project Structure
 
 ```text
 sre-service-monitor/
@@ -47,15 +54,15 @@ sre-service-monitor/
     +-- monitor.log
 ```
 
-## Configuration
+## ?? Configuration
 
-Create your local environment file from the example:
+Create a local configuration file from the example:
 
 ```bash
 copy .env.example .env
 ```
 
-Example `.env` values:
+Example `.env`:
 
 ```env
 URL=https://httpstat.us/500
@@ -64,20 +71,22 @@ MAX_CONSECUTIVE_FAILURES=3
 METRICS_PORT=8000
 ```
 
-### Environment Variables
+### ?? Environment Variables
 
-- `URL`: target endpoint to monitor
-- `INTERVAL`: number of seconds between checks
-- `MAX_CONSECUTIVE_FAILURES`: alert threshold
-- `METRICS_PORT`: port used to expose Prometheus metrics
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `URL` | Target endpoint to monitor | `https://httpstat.us/500` |
+| `INTERVAL` | Seconds between checks | `10` |
+| `MAX_CONSECUTIVE_FAILURES` | Alert threshold | `3` |
+| `METRICS_PORT` | Port for Prometheus metrics | `8000` |
 
-## Installation
+## ?? Local Setup
+
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
-
-## Local Usage
 
 Run the monitor:
 
@@ -85,13 +94,7 @@ Run the monitor:
 python monitor.py
 ```
 
-Once started, the script will:
-
-- monitor the configured endpoint continuously
-- write logs to `logs/monitor.log`
-- expose metrics at `http://localhost:8000/metrics`
-
-## Docker Usage
+## ?? Docker Setup
 
 Build the image:
 
@@ -105,13 +108,29 @@ Run the container:
 docker run --rm -p 8000:8000 --env-file .env --name sre-monitor sre-service-monitor
 ```
 
-This will:
+## ?? Metrics Endpoint
 
-- start the monitor inside a container
-- expose Prometheus metrics on port `8000`
-- load runtime configuration from `.env`
+Once the monitor is running, Prometheus-style metrics are available at:
 
-## Example Log Output
+```text
+http://localhost:8000/metrics
+```
+
+### ?? Exported Metrics
+
+- `monitor_requests_total`: total number of checks executed
+- `monitor_failures_total`: total number of failed checks
+- `service_status`: service state gauge where `1=up` and `0=down`
+
+## ?? Health Model
+
+| HTTP Result | Health State |
+|-------------|--------------|
+| `200` | `HEALTHY` |
+| `4xx` or non-200 below `500` | `DEGRADED` |
+| `5xx` or request exception | `DOWN` |
+
+## ?? Example Log Output
 
 ```text
 [2026-05-20T14:00:00.000000] STATUS=HEALTHY CODE=200 URL=https://httpstat.us/200
@@ -119,54 +138,44 @@ This will:
 [2026-05-20T14:00:30.000000] ALERT=CRITICAL SERVICE_DOWN failures=3
 ```
 
-## Prometheus Metrics
-
-The monitor exposes these custom metrics:
-
-- `monitor_requests_total`: total number of checks executed
-- `monitor_failures_total`: total number of failed checks
-- `service_status`: current service state where `1=up` and `0=down`
-
-Metrics are available at:
-
-```text
-http://localhost:8000/metrics
-```
-
-## Health Model
-
-The monitor classifies responses using a simple service health model:
-
-- `HEALTHY`: HTTP `200`
-- `DEGRADED`: non-200 responses below `500`
-- `DOWN`: HTTP `500+` or request exceptions
-
-## SRE Concepts Implemented
+## ?? SRE Concepts Implemented
 
 - Health checks
 - Observability through logs and metrics
 - Failure detection
-- Consecutive failure thresholds
-- Critical alerting
+- Alert thresholds
 - Environment-based configuration
-- Basic service state modeling
+- Service state modeling
 - Containerized execution
 
-## Why This Project Matters
+## ?? Why This Project Matters
 
-This project demonstrates practical foundations expected in a junior SRE portfolio:
+This project is a strong junior SRE portfolio example because it demonstrates:
 
-- monitoring and health validation
-- operational logging
-- failure handling
-- alert threshold logic
+- practical monitoring logic
+- operational observability
+- alert-driven thinking
 - metrics exposure for Prometheus scraping
-- portable deployment with Docker
+- portable deployment using Docker
 
-## Future Improvements
+## ??? Roadmap
 
 - JSON structured logging
-- Slack or email alert integration
-- Docker Compose setup
+- Alert integrations such as Slack or email
+- Docker Compose support
 - Prometheus scrape configuration
-- Grafana dashboard visualization
+- Grafana dashboards
+
+## ?? Visual Summary
+
+- `HEALTHY`: service responds with `200`
+- `DEGRADED`: service responds but not with `200`
+- `DOWN`: service fails or returns `5xx`
+- `ALERT=CRITICAL`: repeated failure threshold reached
+- `/metrics`: ready for Prometheus scraping
+
+## ?? Repository Notes
+
+- Use `.env.example` as the starting point for local configuration.
+- Keep `.env` and generated logs out of version control.
+- The monitor is designed to be simple, readable, and interview-friendly.
