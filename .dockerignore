@@ -1,5 +1,8 @@
+.git
+.gitignore
 __pycache__/
+*.pyc
+venv/
 logs/
 monitor.log
-*.pyc
 .env
