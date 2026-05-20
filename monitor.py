@@ -1,11 +1,12 @@
+import os
 import time
 from datetime import datetime
 
 import requests
 
-URL = "https://httpstat.us/500"
-INTERVAL = 10  # segundos
-LOG_FILE = "monitor.log"
+URL = os.getenv("URL", "https://httpstat.us/500")
+INTERVAL = int(os.getenv("INTERVAL", 10))
+LOG_FILE = "logs/monitor.log"
 MAX_CONSECUTIVE_FAILURES = 3
 
 consecutive_failures = 0
@@ -28,9 +29,11 @@ def check_service() -> None:
 
         if status == 200:
             consecutive_failures = 0
+            print("SERVICE HEALTHY")
             log_message = f"[{timestamp}] STATUS=OK CODE={status} URL={URL}"
         else:
             consecutive_failures += 1
+            print("SERVICE DEGRADED")
             log_message = (
                 f"[{timestamp}] STATUS=ERROR CODE={status} URL={URL} "
                 f"CONSECUTIVE_FAILURES={consecutive_failures}"
@@ -38,6 +41,7 @@ def check_service() -> None:
 
     except requests.RequestException as error:
         consecutive_failures += 1
+        print("SERVICE DEGRADED")
         log_message = (
             f"[{timestamp}] STATUS=FAIL URL={URL} ERROR={error} "
             f"CONSECUTIVE_FAILURES={consecutive_failures}"
@@ -52,7 +56,11 @@ def check_service() -> None:
         write_log(alert_message)
 
 
-if __name__ == "__main__":
+def main() -> None:
     while True:
         check_service()
         time.sleep(INTERVAL)
+
+
+if __name__ == "__main__":
+    main()

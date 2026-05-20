@@ -19,7 +19,17 @@ This project monitors a web service by sending periodic HTTP requests and loggin
 3. Run the monitor:
    `python monitor.py`
 
-## What it demonstrates
-- Basic observability
-- Monitoring automation
-- Simple failure detection
+## Environment variables
+`URL=https://example.com`
+`INTERVAL=5`
+
+## What this simulates
+- Health checks
+- Monitoring system behavior
+- Basic alerting system
+
+## SRE concepts applied
+- Observability
+- Logging
+- Incident detection
+- Failure thresholds
